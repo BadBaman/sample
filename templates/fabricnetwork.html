@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:c="">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="home.css">
+    <title>区块链网络</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="vue.min.js"></script>
+    <script src="vue/vue-resource.js"></script>
+    <script src="index.js"></script>
+    <script src="comm/Ajax.js"></script>
+    <script src="layui.js"></script>
+    <script src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">区块链网络</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="hello">主页 <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="fabricnetwork">区块链网络</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="file">查看文件</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        业务
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="upload">上传文件</a>
+                        <a class="dropdown-item" href="file">下载文件</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="transaction">交易</a>
+                    </div>
+                </li>
+<!--                 <li class="nav-item">
+                    <a class="nav-link" href="register">注册</a>
+                </li> -->
+                <li class="nav-item" th:if="${#strings.isEmpty(session.isLogin)}">
+                    <a class="nav-link" href="login">登陆</a>
+                </li>
+
+
+            </ul>
+            <ul class="navbar-nav mr-auto">
+                <form  class="form-inline my-2 my-lg-0" action="upload" method="post" enctype="multipart/form-data">
+                    <input type="file"  name="file" style="display:list-item"/>
+                    <!--<input type="text"  name="file1" />-->
+                    <!--<button type="button" onclick="">上传</button>-->
+                    <label>
+                        <input type="submit" value="提交"/>
+                    </label>
+                    <span style="color:red;" th:text="${msg}"></span>
+					
+                </form>
+                <li class="nav-item">
+                    <a class="nav-link" href="file">下载文件</a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="请输入..." aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+            </form>
+            <div th:if="${session.isLogin =='yes'}">
+				<ul>
+					<li class="nav-item"><a class="nav-link" href="loginOut">退出</a></li>
+				</ul>
+			</div>
+        </div>
+    </nav>
+    <div id="app">
+            <el-steps :active="active" finish-status="success" align-center>
+                <el-step title="创建通道" description="">
+                </el-step>
+                <el-step title="节点加入通道" description="">
+                </el-step>
+                <el-step title="智能合约安装和实例化" description="">
+                </el-step>
+                <el-step title="智能合约调用更新" description="">
+                </el-step>
+            </el-steps>
+            <el-button style="margin-top: 12px;" @click="next">下一步</el-button>
+            <template>
+                <el-tabs v-model="activeName" @tab-click="handleClick" tab-position="tabPosition" style="height: 200px;">
+                    <el-tab-pane label="创建通道" name="first">创建通道
+                        <div style="margin: 20px;"></div>
+                        <br>
+                        <div class="layui-row layui-col-space10">
+                            <div class="layui-col-md4">
+                                <el-form :model="instantiateForm" :rules="instantiates" ref="instantiateForm" label-width="100px" class="demo-instantiateForm">
+                                    <el-form-item label="通道名称" prop="channel">
+                                        <el-input id="input1_1" v-model="instantiateForm.channel" style="width:210px;"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="组织名称" prop="organization">
+                                        <el-input id="input1_2" v-model="instantiateForm.organization" style="width:210px;"></el-input>
+                                    </el-form-item>
+                                    <el-form-item>
+                                        <el-button type="primary" @click="submitForm('instantiateForm')">创建通道</el-button>
+                                        <el-button @click="resetForm('instantiateForm')">重置表单</el-button>
+                                    </el-form-item>
+                                </el-form>
+                            </div>
+                            <div class="layui-col-md4">
+
+                            </div>
+                            <div class="layui-col-md4">
+                                <li>创建通道结果展示</li>
+                                <div id="display_f_1" style="width: 300px;height: 240px;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);">
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </el-tab-pane>
+                    <el-tab-pane label="节点加入通道" name="second">节点加入通道
+                        <div style="margin: 20px;"></div>
+                        <br>
+                        <div class="layui-row layui-col-space10">
+                            <div class="layui-col-md4">
+                            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+                                <el-form-item label="通道名称" prop="channel">
+                                    <el-input id="input2_1" v-model="ruleForm.channel" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="组织名称" prop="organization">
+                                    <el-input id="input2_2" v-model="ruleForm.organization" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="节点名称" prop="peer">
+                                    <el-input id="input2_3" v-model="ruleForm.peer" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="是否为组织内节点" prop="peerinorg">
+                                    <el-switch v-model="ruleForm.peerinorg"></el-switch>
+                                </el-form-item>
+                                <el-form-item label="节点特性" prop="peerfeature">
+                                    <el-checkbox-group v-model="ruleForm.peerfeature">
+                                        <el-checkbox label="上传文件" name="type"></el-checkbox>
+                                        <el-checkbox label="下载普通文件" name="type"></el-checkbox>
+                                        <el-checkbox label="下载重要文件" name="type"></el-checkbox>
+                                        <el-checkbox label="管理员身份" name="type"></el-checkbox>
+                                    </el-checkbox-group>
+                                </el-form-item>
+                                <el-form-item label="节点类型" prop="peertype">
+                                    <el-radio-group v-model="ruleForm.peertype">
+                                        <el-radio label="普通节点"></el-radio>
+                                        <el-radio label="排序节点"></el-radio>
+                                    </el-radio-group>
+                                </el-form-item>
+                                <el-form-item label="其他描述" prop="desc">
+                                    <el-input type="textarea" v-model="ruleForm.desc" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item>
+                                    <el-button type="primary" @click="submitForm('ruleForm')">立即加入</el-button>
+                                    <el-button @click="resetForm('ruleForm')">重置</el-button>
+                                </el-form-item>
+                            </el-form>
+                            </div>
+                            <div class="layui-col-md4">
+
+                            </div>
+                            <div class="layui-col-md4">
+                                <li>加入节点结果展示</li>
+                                <div id="display_f_2" style="width: 300px;height: 240px;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);">
+
+                                </div>
+                            </div>
+                        </div>
+                    </el-tab-pane>
+                    <el-tab-pane label="智能合约安装" name="third">智能合约安装
+                        <div style="margin: 20px;"></div>
+                        <br>
+                        <div class="layui-row layui-col-space10">
+                            <div class="layui-col-md4">
+                            <el-form :model="installForm" :rules="installs" ref="installForm" label-width="100px" class="demo-installForm">
+                                <el-form-item label="通道名称" prop="channel">
+                                    <el-input id="input3_1" v-model="installForm.channel" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="组织名称" prop="organization">
+                                    <el-input id="input3_2" v-model="installForm.organization" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="链码名称" prop="peer">
+                                    <el-input id="input3_3" v-model="installForm.peer" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <!-- <el-form-item label="链码名称" prop="chaincodename">
+                                    <el-select v-model="installForm.chaincodename" placeholder="请选择链码名称">
+                                        <el-input id="input3_4" v-model="installForm.chaincodename" style="width:210px;"></el-input>
+                                    </el-select>
+                                </el-form-item> -->
+                                <el-form-item label="链码地址" prop="chaincodeaddress">
+                                    <el-input id="input3_5" v-model="installForm.chaincodeaddress" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="链码版本" prop="chaincodeversion">
+                                    <el-input id="input3_6" v-model="installForm.chaincodeversion" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="其他描述" prop="desc">
+                                    <el-input type="textarea" v-model="installForm.desc" style="width:210px;"></el-input>
+                                </el-form-item>
+
+                                <el-form-item>
+                                    <el-button type="primary" @click="submitForm('installForm')">立即安装</el-button>
+                                    <el-button @click="resetForm('installForm')">重置</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </div>
+                        <div class="layui-col-md4">
+
+                        </div>
+                        <div class="layui-col-md4">
+                            <li>安装智能合约结果展示</li>
+                            <div id="display_f_3" style="width: 300px;height: 240px;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);">
+
+                            </div>
+                        </div>
+                        </div>
+                    </el-tab-pane>
+                    <el-tab-pane label="智能合约实例化" name="third">智能合约实例化
+                        <div style="margin: 20px;"></div>
+                        <br>
+                        <div class="layui-row layui-col-space10">
+                            <div class="layui-col-md4">
+                            <el-form :model="instanForm" :rules="instan" ref="instanForm" label-width="100px" class="demo-installForm">
+                                <el-form-item label="通道名称" prop="channel">
+                                    <el-input id="input4_1" v-model="instanForm.channel" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="组织名称" prop="organization">
+                                    <el-input id="input4_2" v-model="instanForm.organization" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="节点名称" prop="peer">
+                                    <el-input id="input4_3" v-model="instanForm.peer" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="链码名称" prop="chaincodename">
+                                    <el-select v-model="instanForm.chaincodename" placeholder="请选择链码名称">
+                                        <el-input id="input4_4" v-model="instanForm.chaincodename" style="width:210px;"></el-input>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="链码地址" prop="chaincodeaddress">
+                                    <el-input id="input4_5" v-model="instanForm.chaincodeaddress" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="链码版本" prop="chaincodeversion">
+                                    <el-input id="input4_6" v-model="instanForm.chaincodeversion" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="其他描述" prop="desc">
+                                    <el-input type="textarea" v-model="instanForm.desc" style="width:210px;"></el-input>
+                                </el-form-item>
+
+                                <el-form-item>
+                                    <el-button type="primary" @click="submitForm('instanForm')" class="green">实例化</el-button>
+                                    <el-button @click="resetForm('installForm')">重置</el-button>
+                                </el-form-item>
+                            </el-form>
+                            </div>
+                            <div class="layui-col-md4">
+
+                            </div>
+                            <div class="layui-col-md4">
+                                <li>智能合约实例化结果展示</li>
+                                <div id="display_f_4" style="width: 300px;height: 240px;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);">
+
+                                </div>
+                            </div>
+                        </div>
+                    </el-tab-pane>
+                    <el-tab-pane label="智能合约更新" name="forth">智能合约更新
+                        <div style="margin: 20px;"></div>
+                        <br>
+                        <div style="margin: 20px;"></div>
+                        <div class="layui-row layui-col-space10">
+                            <div class="layui-col-md4">
+                            <el-form :model="updateForm" :rules="updates" ref="updateForm" label-width="100px" class="demo-updateForm">
+                                <el-form-item label="通道名称" prop="channel">
+                                    <el-input id="input5_1" v-model="updateForm.channel" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="组织名称" prop="organization">
+                                    <el-input id="input5_2" v-model="updateForm.organization" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <!-- <el-form-item label="节点名称" prop="peer">
+                                    <el-input id="input5_3" v-model="updateForm.peer" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="链码名称" prop="chaincodename">
+                                    <el-select v-model="updateForm.chaincodename" placeholder="请选择链码名称">
+                                        <el-input id="input5_4" v-model="updateForm.chaincodename" style="width:210px;"></el-input>
+                                    </el-select>
+                                </el-form-item> -->
+                                <el-form-item label="链码地址" prop="chaincodeaddress">
+                                    <el-input id="input5_5" v-model="updateForm.chaincodeaddress" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="链码版本" prop="chaincodeversion">
+                                    <el-input id="input5_6" v-model="updateForm.chaincodeversion" style="width:210px;"></el-input>
+                                </el-form-item>
+                                <el-form-item label="其他描述" prop="desc">
+                                    <el-input type="textarea" v-model="updateForm.desc" style="width:210px;"></el-input>
+                                </el-form-item>
+
+                                <el-form-item>
+                                    <el-button type="primary" @click="submitForm('updateForm')">立即升级</el-button>
+                                    <el-button @click="resetForm('updateForm')">重置</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </div>
+                        <div class="layui-col-md4">
+
+                        </div>
+                        <div class="layui-col-md4">
+                            <li>更新智能合约结果展示</li>
+                            <div id="display_f_5" style="width: 300px;height: 240px;box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);">
+
+                            </div>
+                        </div>
+                        </div>
+                    </el-tab-pane>
+                </el-tabs>
+            </template>
+    </div>
+</body>
+</html>
+<script>
+
+    var Main = {
+
+        data() {
+            return {
+                active: 0,
+                activeName: 'first',
+                tabPosition: 'top',
+                dialogVisible: false,
+                input: '',
+                ruleForm: {
+                    channel: '',
+                    organization: '',
+                    peer: '',
+                    peerinorg: true,
+                    peerfeature: [],
+                    peertype: '',
+                    desc: ''
+                },
+                installForm: {
+                    channel: '',
+                    organization: '',
+                    chaincodename: '',
+                    chaincodeaddress: '',
+                    chaincodeversion: '1.0',
+                    desc: ''
+                },
+                instanForm: {
+                    channel: '',
+                    organization: '',
+                    chaincodename: '',
+                    chaincodeaddress: '',
+                    chaincodeversion: '1.0',
+                    desc: ''
+                },
+                updateForm: {
+                    channel: '',
+                    organization: '',
+                    chaincodename: '',
+                    chaincodeaddress: '',
+                    chaincodeversion: '2.0',
+                    desc: ''
+                },
+                lookupForm: {
+                    channel: '',
+                    organization: '',
+                    chaincodename: '',
+                    chaincodeaddress: '',
+                    chaincodeversion: '1.0',
+                    desc: ''
+                },
+                instantiateForm:{
+                    channel: '',
+                    organization: '',
+                },
+                rules: {
+                    channel: [
+                        { required: true, message: '请输入通道', trigger: 'blur' },
+                        { min: 3, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' }
+                    ],
+                    peer:[
+                        { required: true, message: '请输入节点名，多个节点可用","分隔开来', trigger: 'blur' },
+                        { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' }
+                    ],
+                    organization: [
+                        { required: true, message: '请输入组织名', trigger: 'blur' },
+                        { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' }
+                    ],
+                    peerfeature: [
+                        { type: 'array', required: true, message: '请至少选择一个可选服务', trigger: 'change' }
+                    ],
+                    peertype: [
+                        { required: true, message: '请选择是否为排序节点', trigger: 'change' }
+                    ],
+                },
+                installs: {
+                    channel: [
+                        { required: true, message: '请输入通道', trigger: 'blur' },
+                        { min: 3, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' }
+                    ],
+                    organization: [
+                        { required: true, message: '请输入组织名', trigger: 'blur' },
+                        { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' }
+                    ],
+                    peer:[
+                        { required: true, message: '请输入节点名，多个节点可用","分隔开来', trigger: 'blur' },
+                        { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' }
+                    ],
+
+
+                    chaincodename: [
+                        { required: true, message: '请选择链码名称', trigger: 'change' },
+                        { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' }
+                    ],
+                    chaincodeaddress: [
+                        { required: true, message: '示例 /src/github.com/xx/xx.go', trigger: 'blur' },
+                        {min:10 ,max:200,message:"/src/github.com/xx/xx.go路径下",trigger: 'blur'}
+                    ],
+                    chaincodeversion: [
+                        { required: true, message: '请输入链码版本', trigger: 'blur' },
+                        { min: 1, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' }
+                    ],
+                },
+                instan: {
+                    channel: [
+                        { required: true, message: '请输入通道', trigger: 'blur' },
+                        { min: 3, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' }
+                    ],
+                    organization:[
+                        { required: true, message: '可输入多个组织,逗号隔开，需组织提前协商好！', trigger: 'blur' },
+                        { min: 3, max: 30, message: '可输入多个组织,逗号隔开，需组织提前协商好！', trigger: 'blur' }
+                    ],
+                    peer:[
+                        { required: true, message: '请输入节点名，多个节点可用","分隔开来', trigger: 'blur' },
+                        { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' }
+                    ],
+                },
+                lookup: {
+                    channel: [
+                        { required: true, message: '请输入通道', trigger: 'blur' },
+                        { min: 3, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' }
+                    ],
+                    chaincodename: [
+                        { required: true, message: '请选择链码名称', trigger: 'change' },
+                        { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' }
+                    ],
+                    chaincodeaddress: [
+                        { required: true, message: '请输入链码地址,一般为/src/github.com/xx/xx.go路径下', trigger: 'blur' },
+                        {min:10 ,max:200,message:"/src/github.com/xx/xx.go路径下",trigger: 'blur'},
+                    ],
+                    chaincodeversion: [
+                        { required: true, message: '请输入链码版本', trigger: 'blur' },
+                        { min: 1, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' }
+                    ],
+                },
+                updates: {
+                    channel: [
+                        { required: true, message: '请输入通道', trigger: 'blur' },
+                        { min: 3, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' },
+                    ],
+                    organization:[
+                        { required: true, message: '请输入通道', trigger: 'blur' },
+                        { min: 3, max: 30, message: '可输入多个组织，组织名用"",""分开表示，需组织之间提前协商好', trigger: 'blur' }
+                    ],
+                    peer:[
+                        { required: true, message: '请输入节点名，多个节点可用","分隔开来', trigger: 'blur' },
+                        { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' }
+                    ],
+                    chaincodename: [
+                        { required: true, message: '请选择链码名称', trigger: 'change' },
+                        { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' }
+                    ],
+                    chaincodeaddress: [
+                        { required: true, message: '请输入链码地址,一般为/src/github.com/xx/xx.go路径下', trigger: 'blur' },
+                        {min:10 ,max:200,message:"/src/github.com/xx/xx.go路径下",trigger: 'blur'}
+                    ],
+                    chaincodeversion: [
+                        { required: true, message: '请输入链码版本', trigger: 'blur' },
+                        { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' }
+                    ],
+                },
+                instantiates:{
+                    channel: [
+                        { required: true, message: '请输入通道', trigger: 'blur' },
+                        { min: 3, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' }
+                    ],
+                    organization:[
+                        { required: true, message: '请输入通道', trigger: 'blur' },
+                        { min: 3, max: 30, message: '可输入多个组织，组织名用"",""分开表示，需组织之间提前协商好', trigger: 'blur' }
+                    ],
+                },
+                fileList: [],
+            };
+
+        },
+
+        methods: {
+            next() {
+                this.active++;
+                switch(this.active){
+                    case 1:this.activeName='second';break;
+                    case 2:this.activeName='third';break;
+                    case 3:this.activeName='forth';break;
+                    case 4:this.activeName='forth';break;
+                    default:
+                        break;
+                }
+                if (this.active > 3){
+
+
+                    this.active = 0;
+                    this.$message({
+                        message: '恭喜你，看完运行步骤！',
+                        type: 'success'
+                    });
+                }
+
+
+            },
+            handleClose(done) {
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        done();
+                    })
+                    .catch(_ => {});
+            },
+            submitForm(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if(valid){
+                        switch (formName){
+                            case 'ruleForm':
+                                var send_2=document.getElementById('input2_1').value;//节点加入通道
+                                var org_2=document.getElementById('input2_2').value;
+                                var url_2='http://localhost:8080/join';
+                                //使用$.ajax完成操作
+                                var that_2=this;
+                                $.ajax({
+                                    url:'/channel/join',
+                                    data:{'channel_name':send_2,
+                                    'orgname':org_2,},
+                                    type:"POST",
+                                    dataType:"json",
+                                    success:function(data){ //参数data它接收了服务器响应的数据
+                                        $("#username_span").html(data);
+                                       	if(data.code==200){
+                                       	 that_2.$message({
+                                             message: '节点已添加',
+                                             type: 'success'
+                                         });
+                                       	}else{
+                                       	 that_2.$message({
+                                             message: data.msg,
+                                             type: 'error'
+                                         });
+                                       	}
+                                        console.log(data);
+                                        document.getElementById('display_f_2').innerText=data.msg;
+                                        that_2.active=2;
+                                        this.active=2;
+                                        //that_2.activeName='third';
+                                    }
+                                });
+                                break;
+                            case 'installForm':
+                                var send_3=document.getElementById('input3_1').value;//智能合约安装 channel
+                                var org_3=document.getElementById('input3_2').value;//org
+                                var peer_3=document.getElementById('input3_3').value;//name
+                                //var codepath_3=document.getElementById('input3_4').value;
+                                var codepath_3=document.getElementById('input3_5').value;//path
+                                var codeversion_3=document.getElementById('input3_6').value;//version
+                                var url_3='http://localhost:8080/install';
+                                //使用$.ajax完成操作 'codename':codename_3,
+                                var that_3=this;
+                                $.ajax({
+                                    url:'/chaincode/install',
+                                    data:{'channel':send_3,
+                                        'orgname':org_3,
+                                        'codename':peer_3,
+                                        'codepath':codepath_3,
+                                        'codeversion':codeversion_3,
+                                    },
+                                    type:"POST",
+                                    dataType:"json",
+                                    success:function(data){ //参数data它接收了服务器响应的数据
+                                        $("#username_span").html(data);
+                                    	if(data.code==200){
+                                    		that_3.$message({
+                                                message: '智能合约安装成功！',
+                                                type: 'success'
+                                            });
+                                    	}else{
+                                    		that_3.$message({
+                                                message: data.msg,
+                                                type: 'error'
+                                            });
+                                    	}
+                                        
+                                        document.getElementById('display_f_3').innerText=data.msg;
+                                        that_3.active=3;
+                                        this.active=3;
+                                    }
+                                });
+                                break;
+                            case 'instantiateForm':
+                                    var send_1=document.getElementById('input1_1').value;//通道创建
+                                    var org_1=document.getElementById('input1_2').value;
+                                    var url_1='http://localhost:8080/create';
+                                    console.log("1");
+                                    //使用$.ajax完成操作
+                                    var that_1=this;
+                                    $.ajax({
+                                        url:'/channel/create',
+                                        data:{'channel':send_1,
+                                        'orgname':org_1},
+                                        type:"POST",
+                                        dataType:"json",
+                                        success:function(data){ //参数data它接收了服务器响应的数据
+                                            console.log("2");
+                                            console.log(data);
+                                            $("#username_span").html(data);
+                                            if(data.code==200){
+                                            	that_1.$message({
+                                                    message: '通道创建成功！',
+                                                    type: 'success'
+                                                });
+                                            }else{
+                                            	that_1.$message({
+                                                    message: '通道创建失败！',
+                                                    type: 'warning'
+                                                });
+                                            }
+                                            
+                                            document.getElementById('display_f_1').innerText=data.msg;
+                                            that_1.active=1;
+                                            this.active=1;
+                                            //that_1.activeName='second';
+
+                                        },
+                                    });
+                                break;
+                            case 'updateForm':
+                                var send_5=document.getElementById('input5_1').value;
+                                var organization_5=document.getElementById('input5_2').value;
+                                /* var peer_5=document.getElementById('input5_3').value;
+                                var codepath_5=document.getElementById('input5_4').value; */
+                                var codepath_5=document.getElementById('input5_5').value;
+                                var codeversion_5=document.getElementById('input5_6').value;
+                                var url_5='http://localhost:8080/upgrade';
+                                //使用$.ajax完成操作
+                                var that_5=this;
+                                $.ajax({
+                                    url:'/chaincode/upgrade',//更新智能合约'codename':codename_5,'username':peer_5,
+                                    data:{'channel':send_5,
+                                        'orgs':organization_5,
+                                        'codepath':codepath_5,
+                                        'codeversion':codeversion_5,
+                                    },
+                                    type:"POST",
+                                    dataType:"json",
+                                    success:function(data){ //参数data它接收了服务器响应的数据
+                                        $("#username_span").html(data);
+                                    	if(data.code==200){
+                                    		that_5.$message({
+                                                message: '链码更新完成！',
+                                                type: 'success'
+                                            });
+                                    	}else{
+                                    		that_5.$message({
+                                                message: '链码更新失败！',
+                                                type: 'error'
+                                            });
+                                    	}
+                                        
+                                        document.getElementById('display_f_5').innerText=data.msg;
+                                        that_5.active=4;
+                                        this.active=4;
+                                        that_5.activeName='forth';
+                                        /* that_5.$message({
+                                            message: '已完成全部流程',
+                                            type: 'success'
+                                        }); */
+                                    }
+                                });
+                                break;
+                            case 'instanForm':
+                            {
+                                var send_4=document.getElementById('input4_1').value;
+                                var organization_4=document.getElementById('input4_2').value;
+                                var peer_4=document.getElementById('input4_3').value;
+                                //使用$.ajax完成操作 'username':peer_4
+                                var that_4=this;
+                                $.ajax({
+                                    url:'/chaincode/instantiate',//实例化智能合约
+                                    data:{'channel':send_4,
+                                        'orgs':organization_4,
+                                    },
+                                    type:"POST",
+                                    dataType:"json",
+                                    success:function(data){ //参数data它接收了服务器响应的数据
+                                        $("#username_span").html(data);
+                                    console.log(data);
+                                    	if(data.code==200){
+                                    		that_4.$message({
+                                                message: '链码实例化成功！',
+                                                type: 'success'
+                                            });
+                                    	}else{
+                                    		that_4.$message({
+                                                message: data.msg,
+                                                type: 'error'
+                                            });
+                                    	}
+                                        
+                                        document.getElementById('display_f_4').innerText=data.msg;
+                                        that_4.active=4;
+                                        this.active=4;
+                                        //that_4.activeName='forth';
+                                    }
+                                });
+                            }
+                                break;
+                            case 'lookupForm':
+                            {
+                                var send_6=installForm.channel.val();
+                                var codepath_6=installForm.chaincodeaddress.val();
+                                var codename_6=installForm.chaincodename.val();
+                                var codeversion_6=installForm.chaincodeversion.val();
+                                var url_6='http://localhost:8080/querychaincode';//查询智能合约
+                                //使用$.ajax完成操作
+                                var that_6=this;
+                                $.ajax({
+                                    url:'http://localhost:8080/querychaincode',
+                                    data:{'channel':send_6,
+                                        'codepath':codepath_6,
+                                        'codename':codename_6,
+                                        'codeversion':codeversion_6,
+                                    },
+                                    type:"POST",
+                                    dataType:"html",
+                                    success:function(data){ //参数data它接收了服务器响应的数据
+                                        $("#username_span").html(data);
+                                        that_6.$message({
+                                            message: '链码查询成功',
+                                            type: 'success'
+                                        });
+                                        that_6.active++;
+                                    }
+                                });
+                            }
+                                break;
+                            default:
+                                break;
+                        }
+                    }else{
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            },
+
+            submitUpload() {
+                this.$refs.upload.submit();
+            },
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+            },
+            handlePreview(file) {
+                console.log(file);
+            },
+            handleClick(tab, event) {
+                console.log(tab, event);
+            }
+        }
+    };
+
+    var Ctor = Vue.extend(Main);
+    new Ctor().$mount('#app')
+</script>
+<script>
+    document.getElementById('display_f_1').innerText="hello";
+</script>
